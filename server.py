@@ -37,9 +37,9 @@ service = ToneAnalyzerV3(
 certi = firebase_admin.credentials.Certificate(cred)
 fireapp = firebase_admin.initialize_app(certi, {'storageBucket': 'sgih-4b054.appspot.com/','databaseURL': 'https://sgih-4b054.firebaseio.com/'})
 
-@app.route("/upload", methods = ['POST'])
+@app.route("/upload", methods = ['GET', 'POST'])
 def upload():
-	if request.method == 'POST':
+	if request.method == 'POST' or request.method == 'GET':
 		ref = db.reference('/')
 		z = ref.get()
 		data=z['text']

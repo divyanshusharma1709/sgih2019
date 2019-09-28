@@ -1,0 +1,7 @@
+flask
+gunicorn
+firebase-admin
+numpy
+APScheduler==3.0.0
+ibm_watson
+python-firebase

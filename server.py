@@ -1,4 +1,3 @@
-from __future__ import print_function
 import json
 from os.path import join, dirname
 from ibm_watson import ToneAnalyzerV3
@@ -45,6 +44,7 @@ def upload():
 	data=z['text']
 	tone_analysis = service.tone({'text': data},content_type='application/json').get_result()
 	print(json.dumps(tone_analysis, indent=2))
+	return json.dumps(tone_analysis, indent=2)
 
 
 

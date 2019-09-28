@@ -39,12 +39,13 @@ fireapp = firebase_admin.initialize_app(certi, {'storageBucket': 'sgih-4b054.app
 
 @app.route("/upload", methods = ['POST'])
 def upload():
-	ref = db.reference('/')
-	z = ref.get()
-	data=z['text']
-	tone_analysis = service.tone({'text': data},content_type='application/json').get_result()
-	print(json.dumps(tone_analysis, indent=2))
-	return json.dumps(tone_analysis, indent=2)
+	if request.method == 'POST':
+		ref = db.reference('/')
+		z = ref.get()
+		data=z['text']
+		tone_analysis = service.tone({'text': data},content_type='application/json').get_result()
+		print(json.dumps(tone_analysis, indent=2))
+		return json.dumps(tone_analysis, indent=2)
 
 
 

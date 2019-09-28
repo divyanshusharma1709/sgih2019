@@ -39,16 +39,12 @@ service = ToneAnalyzerV3(
 certi = firebase_admin.credentials.Certificate(cred)
 fireapp = firebase_admin.initialize_app(certi, {'storageBucket': 'sgih-4b054.appspot.com/','databaseURL': 'https://sgih-4b054.firebaseio.com/'})
 
-@app.route("/upload", methods = ['GET', 'POST'])
-def upload():
-	if request.method == 'POST' or request.method == 'GET':
-		ref = db.reference('/')
-		z = ref.get()
-		data=z['text']
-		tone_analysis = service.tone({'text': data},content_type='application/json').get_result()
-		print(json.dumps(tone_analysis, indent=2))
-		return json.dumps(tone_analysis, indent=2)
-
+@app.route("/service", methods = ['POST'])
+def service():
+	data=request.data
+	tone_analysis = service.tone({'text': data},content_type='application/json').get_result()
+	print(json.dumps(tone_analysis, indent=2))
+	return(json.dumps(tone_analysis, indent=2))
 
 
 # service = ToneAnalyzerV3(

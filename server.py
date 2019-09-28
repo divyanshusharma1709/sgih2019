@@ -11,6 +11,8 @@ import os, random
 import numpy as np
 import binascii, struct
 import zipfile
+from flask import request
+
 
 app = flask.Flask(__name__)
 

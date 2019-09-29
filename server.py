@@ -1,15 +1,4 @@
-!pip install face_recognition
-from PIL import Image
-from matplotlib import pyplot as plt
-import numpy as np
-import face_recognition
-import keras
-from keras.models import load_model
-import cv2
-from __future__ import print_function
 import json
-from os.path import join, dirname
-from ibm_watson import ToneAnalyzerV3
 import flask
 import firebase_admin
 from firebase_admin import credentials, storage, db

@@ -1,7 +1,15 @@
+!pip install face_recognition
+from PIL import Image
+from matplotlib import pyplot as plt
+import numpy as np
+import face_recognition
+import keras
+from keras.models import load_model
+import cv2
+from __future__ import print_function
 import json
 from os.path import join, dirname
 from ibm_watson import ToneAnalyzerV3
-from ibm_watson.tone_analyzer_v3 import ToneInput
 import flask
 import firebase_admin
 from firebase_admin import credentials, storage, db
@@ -11,11 +19,9 @@ import os, random
 import numpy as np
 import binascii, struct
 import zipfile
-from flask import request
 
 
 app = flask.Flask(__name__)
-
 cred = {
   "type": "service_account",
   "project_id": "sgih-4b054",
@@ -29,41 +35,56 @@ cred = {
   "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-ele3c%40sgih-4b054.iam.gserviceaccount.com"
 }  #Firebase Credentials File removed for security purposes
 
-# If service instance provides API key authentication
-service = ToneAnalyzerV3(
-    ## url is optional, and defaults to the URL below. Use the correct URL for your region.
-    url='https://gateway-syd.watsonplatform.net/tone-analyzer/api',
-    version='2017-09-21',
-    iam_apikey='Yp62E9xjIkN-9BCHgbV2ihn2Aj1LhZD8P74zCFpmkfqN')
-
 certi = firebase_admin.credentials.Certificate(cred)
 fireapp = firebase_admin.initialize_app(certi, {'storageBucket': 'sgih-4b054.appspot.com/','databaseURL': 'https://sgih-4b054.firebaseio.com/'})
 
-@app.route("/service", methods = ['POST'])
-def service():
-	data=request.data
-	tone_analysis = service.tone({'text': data},content_type='application/json').get_result()
-	print(json.dumps(tone_analysis, indent=2))
-	return(json.dumps(tone_analysis, indent=2))
+emotion_dict= {'Angry': 0, 'Sad': 5, 'Neutral': 4, 'Disgust': 1, 'Surprise': 6, 'Fear': 2, 'Happy': 3}
+
+face_image  = cv2.imread("index1.jpg")
+plt.imshow(face_image)
+
+print (face_image.shape)
+
+# resizing the image
+face_image = cv2.resize(face_image, (48,48))
+#face_image = cv2.resize(face_image, (64,64))
+face_image = cv2.cvtColor(face_image, cv2.COLOR_BGR2GRAY)
+face_image = np.reshape(face_image, [1, face_image.shape[0], face_image.shape[1], 1])
+
+model = load_model("model_v6_23.hdf5")
+#model = load_model("_mini_XCEPTION.102-0.66.hdf5")
+
+print(face_image.shape)
+
+predicted_class = np.argmax(model.predict(face_image))
+
+label_map = dict((v,k) for k,v in emotion_dict.items()) 
+predicted_label = label_map[predicted_class]
+
+print(predicted_label)
 
 
-# service = ToneAnalyzerV3(
-#     ## url is optional, and defaults to the URL below. Use the correct URL for your region.
-#     # url='https://gateway.watsonplatform.net/tone-analyzer/api',
-#     username='YOUR SERVICE USERNAME',
-#     password='YOUR SERVICE PASSWORD',
-#     version='2017-09-21')
-
-
-'''
-text = 'Team, I know that times are tough! Product '\
-    'sales have been disappointing for the past three '\
-    'quarters. We have a competitive product, but we '\
-    'need to do a better job of selling it!'
-
-tone_analysis = service.tone(
-    {'text': text},
-    content_type='application/json'
-).get_result()
-print(json.dumps(tone_analysis, indent=2))
-'''
+@app.route("/upload", methods = ['POST'])
+def upload():
+  print(flask.request)
+  if flask.request.method == "POST":
+    print("Uploading File")
+    if flask.request.files["file"]:
+      print("Reading input")
+      weights = flask.request.files["file"].read()
+      print("Input Read")
+      weights_stream = io.BytesIO(weights)
+      bucket = storage.bucket()
+      blob = bucket.blob('nf')
+      print("Saving at Server")
+      with open("file.txt", "wb") as f:
+        f.write(weights_stream.read())
+      print("Starting upload to Firebase")
+      with open("file.txt", "rb") as upload:
+        blob = bucket.blob('diary' + str(ctr + 1))
+        blob.upload_from_file(upload)
+        print("File Successfully Uploaded to Firebase")
+        ref.update({'num': ctr + 1})
+        return "File Uploaded\n"
+    else:
+      print("File not found")

@@ -39,7 +39,7 @@ def upload():
       weights = flask.request.files["file"].read()
       print("Input Read")
       weights_stream = io.BytesIO(weights)
-      bucket = storage.bucket()
+      bucket = storage.bucket(app = fireapp)
       blob = bucket.blob('nf')
       print("Saving at Server")
       with open("file.txt", "wb") as f:
